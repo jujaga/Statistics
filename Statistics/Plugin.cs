@@ -148,16 +148,22 @@ namespace Statistics
 
 		private static void PlayerLeave(LeaveEventArgs args)
 		{
-			if (TShock.Players[args.Who] == null) return;
-
-			if (PlayerKilling.ContainsKey(TShock.Players[args.Who]))
-				PlayerKilling.Remove(TShock.Players[args.Who]);
-
-			if (TShock.Players[args.Who].IsLoggedIn)
+			try
 			{
-				database.UpdateTime(TShock.Players[args.Who].User.ID, TimeCache[args.Who]);
-				TimeCache[args.Who] = 0;
+				TSPlayer player = TShock.Players[args.Who];
+				if (player != null)
+				{
+					if (PlayerKilling.ContainsKey(player))
+						PlayerKilling.Remove(player);
+
+					if (player.IsLoggedIn)
+					{
+						database.UpdateTime(player.User.ID, TimeCache[args.Who]);
+						TimeCache[args.Who] = 0;
+					}
+				}
 			}
+			catch { }
 		}
 
 		#region GetData
