@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -34,7 +34,7 @@ namespace Statistics
 			else
 			{
 				Query("INSERT INTO Statistics (UserID, PlayerKills, Deaths, MobKills, BossKills, Logins, Time, " +
-					"MobDamageGiven, BossDamageGiven, PlayerDamageGiven, DamageReceived) " + 
+					"MobDamageGiven, BossDamageGiven, PlayerDamageGiven, DamageReceived) " +
 					"VALUES (@0, @1, @2, @3, @4, @5, @6, @7, @8, @9, @10)",
 					userId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 				Query("INSERT INTO Highscores (UserID, Score) VALUES (@0, @1)", userId, 0);
@@ -55,10 +55,10 @@ namespace Statistics
 		{
 			var creator = new SqlTableCreator(_db,
 				_db.GetSqlType() == SqlType.Sqlite
-					? (IQueryBuilder) new SqliteQueryCreator()
+					? (IQueryBuilder)new SqliteQueryCreator()
 					: new MysqlQueryCreator());
 
-			creator.EnsureExists(table);
+			creator.EnsureTableStructure(table);
 		}
 
 		internal void EnsureExists(params SqlTable[] tables)
@@ -90,7 +90,7 @@ namespace Statistics
 		internal void UpdateHighScores(int userId)
 		{
 			var kills = GetKills(userId);
-			var score = ((2*kills[0]) + kills[1] + (3*kills[2]))/(kills[3] == 0 ? 1 : kills[3]);
+			var score = ((2 * kills[0]) + kills[1] + (3 * kills[2])) / (kills[3] == 0 ? 1 : kills[3]);
 
 			var query = string.Format("UPDATE Highscores SET Score = {0} WHERE UserID = @0",
 				score);
@@ -142,7 +142,7 @@ namespace Statistics
 		internal int[] GetDamage(int userId)
 		{
 			using (var reader = QueryReader("SELECT MobDamageGiven, BossDamageGiven, PlayerDamageGiven, DamageReceived "
-			                                + "FROM Statistics WHERE UserID = @0", userId))
+											+ "FROM Statistics WHERE UserID = @0", userId))
 			{
 				if (reader.Read())
 				{
@@ -195,8 +195,8 @@ namespace Statistics
 				if (reader.Read())
 				{
 					ts[0] = DateTime.UtcNow -
-					        DateTime.ParseExact(reader.Get<string>("Registered"), "s", CultureInfo.CurrentCulture,
-						        DateTimeStyles.AdjustToUniversal);
+							DateTime.ParseExact(reader.Get<string>("Registered"), "s", CultureInfo.CurrentCulture,
+								DateTimeStyles.AdjustToUniversal);
 				}
 				else
 					return null;
@@ -224,8 +224,8 @@ namespace Statistics
 				if (reader.Read())
 				{
 					return DateTime.UtcNow -
-					       DateTime.ParseExact(reader.Get<string>("LastAccessed"), "s", CultureInfo.CurrentCulture,
-						       DateTimeStyles.AdjustToUniversal);
+						   DateTime.ParseExact(reader.Get<string>("LastAccessed"), "s", CultureInfo.CurrentCulture,
+							   DateTimeStyles.AdjustToUniversal);
 				}
 			}
 			return TimeSpan.MaxValue;
@@ -234,7 +234,7 @@ namespace Statistics
 		internal Dictionary<string, int> GetHighScores(int page)
 		{
 			var ret = new Dictionary<string, int>();
-			var index = (page - 1)*5;
+			var index = (page - 1) * 5;
 			var query = string.Format("SELECT * FROM Highscores ORDER BY -Score LIMIT {0}, {1}", index, index + 5);
 			using (var reader = QueryReader(query))
 			{
@@ -281,7 +281,7 @@ namespace Statistics
 				}
 				catch (MySqlException x)
 				{
-					Log.Error(x.ToString());
+					TShock.Log.Error(x.ToString());
 					throw new Exception("MySQL not setup correctly.");
 				}
 			}
@@ -291,5 +291,6 @@ namespace Statistics
 			var db = new Database(idb);
 			return db;
 		}
+
 	}
 }

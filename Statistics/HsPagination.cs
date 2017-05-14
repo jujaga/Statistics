@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using TShockAPI;
 
 namespace Statistics
@@ -21,10 +22,7 @@ namespace Statistics
 				get { return _headerFormat; }
 				set
 				{
-					if (value == null)
-						throw new ArgumentNullException();
-
-					_headerFormat = value;
+					_headerFormat = value ?? throw new ArgumentNullException();
 				}
 			}
 
@@ -38,10 +36,7 @@ namespace Statistics
 				get { return _footerFormat; }
 				set
 				{
-					if (value == null)
-						throw new ArgumentNullException();
-
-					_footerFormat = value;
+					_footerFormat = value ?? throw new ArgumentNullException();
 				}
 			}
 
@@ -109,7 +104,7 @@ namespace Statistics
 				return;
 			}
 
-			var pageCount = ((dataToPaginateCount - 1)/settings.MaxLinesPerPage) + 1;
+			var pageCount = ((dataToPaginateCount - 1) / settings.MaxLinesPerPage) + 1;
 			if (settings.PageLimit > 0 && pageCount > settings.PageLimit)
 				pageCount = settings.PageLimit;
 			if (pageNumber > pageCount)
@@ -124,7 +119,7 @@ namespace Statistics
 						settings.HeaderTextColor);
 			}
 
-			var listOffset = (pageNumber - 1)*settings.MaxLinesPerPage;
+			var listOffset = (pageNumber - 1) * settings.MaxLinesPerPage;
 			var offsetCounter = 0;
 			var lineCounter = 0;
 
@@ -147,7 +142,7 @@ namespace Statistics
 				if (index == 3)
 					lineColor = Color.OrangeRed;
 
-				if (string.Equals(hsName, player.UserAccountName, StringComparison.CurrentCultureIgnoreCase))
+				if (string.Equals(hsName, player.User.Name, StringComparison.CurrentCultureIgnoreCase))
 					lineColor = Color.White;
 
 				if (!string.IsNullOrEmpty(hsName))

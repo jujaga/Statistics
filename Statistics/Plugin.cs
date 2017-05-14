@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -12,7 +12,7 @@ using TShockAPI.Hooks;
 
 namespace Statistics
 {
-	[ApiVersion(1, 17)]
+	[ApiVersion(2, 1)]
 	public class Statistics : TerrariaPlugin
 	{
 		internal static Database tshock;
@@ -20,13 +20,13 @@ namespace Statistics
 		internal static readonly Dictionary<TSPlayer, TSPlayer> PlayerKilling = new Dictionary<TSPlayer, TSPlayer>();
 		internal static readonly int[] TimeCache = new int[Main.player.Length];
 
-		internal static readonly Dictionary<KillType, int>[] SentDamageCache = 
+		internal static readonly Dictionary<KillType, int>[] SentDamageCache =
 			new Dictionary<KillType, int>[Main.player.Length];
 
 		internal static readonly int[] RecvDamageCache = new int[Main.player.Length];
 
 		private readonly Timer _counter = new Timer(1000);
-		private readonly Timer _timeSaver = new Timer(60*1000*5);
+		private readonly Timer _timeSaver = new Timer(60 * 1000 * 5);
 
 		public override string Author
 		{
@@ -45,7 +45,7 @@ namespace Statistics
 
 		public override Version Version
 		{
-			get { return new Version(0, 0, 2); }
+			get { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version; }
 		}
 
 
@@ -71,7 +71,7 @@ namespace Statistics
 			_timeSaver.Start();
 
 
-			TShockAPI.Commands.ChatCommands.Add(new Command("statistics.root", Commands.Core, "info"));
+			TShockAPI.Commands.ChatCommands.Add(new Command("statistics.root", Commands.Core, "stats"));
 		}
 
 		private void OnInitialize(EventArgs args)
@@ -80,8 +80,8 @@ namespace Statistics
 			tshock = Database.InitDb("tshock");
 
 			var table = new SqlTable("Statistics",
-				new SqlColumn("ID", MySqlDbType.Int32) {Unique = true, Primary = true, AutoIncrement = true},
-				new SqlColumn("UserID", MySqlDbType.Int32) {Unique = true},
+				new SqlColumn("ID", MySqlDbType.Int32) { Unique = true, Primary = true, AutoIncrement = true },
+				new SqlColumn("UserID", MySqlDbType.Int32) { Unique = true },
 				new SqlColumn("Time", MySqlDbType.Int32),
 				new SqlColumn("PlayerKills", MySqlDbType.Int32),
 				new SqlColumn("Deaths", MySqlDbType.Int32),
@@ -94,8 +94,8 @@ namespace Statistics
 				new SqlColumn("DamageReceived", MySqlDbType.Int32));
 
 			var table2 = new SqlTable("Highscores",
-				new SqlColumn("ID", MySqlDbType.Int32) {Unique = true, Primary = true, AutoIncrement = true},
-				new SqlColumn("UserID", MySqlDbType.Int32) {Unique = true},
+				new SqlColumn("ID", MySqlDbType.Int32) { Unique = true, Primary = true, AutoIncrement = true },
+				new SqlColumn("UserID", MySqlDbType.Int32) { Unique = true },
 				new SqlColumn("Score", MySqlDbType.Int32));
 
 			database.EnsureExists(table, table2);
@@ -108,7 +108,7 @@ namespace Statistics
 			foreach (var player in TShock.Players)
 				if (player != null && player.ConnectionAlive && player.RealPlayer && player.IsLoggedIn)
 				{
-					database.UpdateTime(player.UserID, TimeCache[player.Index]);
+					database.UpdateTime(player.User.ID, TimeCache[player.Index]);
 					TimeCache[player.Index] = 0;
 				}
 		}
@@ -122,7 +122,7 @@ namespace Statistics
 
 		private static void PlayerPostLogin(PlayerPostLoginEventArgs args)
 		{
-			database.CheckUpdateInclude(args.Player.UserID);
+			database.CheckUpdateInclude(args.Player.User.ID);
 		}
 
 		private static void GreetPlayer(GreetPlayerEventArgs args)
@@ -155,7 +155,7 @@ namespace Statistics
 
 			if (TShock.Players[args.Who].IsLoggedIn)
 			{
-				database.UpdateTime(TShock.Players[args.Who].UserID, TimeCache[args.Who]);
+				database.UpdateTime(TShock.Players[args.Who].User.ID, TimeCache[args.Who]);
 				TimeCache[args.Who] = 0;
 			}
 		}

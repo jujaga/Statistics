@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Terraria;
 using System.IO;
@@ -38,8 +38,7 @@ namespace Statistics
 
 		public static bool HandlerGetData(PacketTypes type, TSPlayer player, MemoryStream data)
 		{
-			GetDataHandlerDelegate handler;
-			if (_getDataHandlerDelegates.TryGetValue(type, out handler))
+			if (_getDataHandlerDelegates.TryGetValue(type, out GetDataHandlerDelegate handler))
 			{
 				try
 				{
@@ -57,7 +56,7 @@ namespace Statistics
 		{
 			if (args.Player == null) return false;
 			var index = args.Player.Index;
-			var npcId = (byte) args.Data.ReadByte();
+			var npcId = (byte)args.Data.ReadByte();
 			args.Data.ReadByte();
 			var damage = args.Data.ReadInt16();
 			var crit = args.Data.ReadBoolean();
@@ -71,30 +70,30 @@ namespace Statistics
 				var critical = 1;
 				if (crit)
 					critical = 2;
-				var hitDamage = (damage - Main.npc[npcId].defense/2)*critical;
+				var hitDamage = (damage - Main.npc[npcId].defense / 2) * critical;
 
 				if (hitDamage > Main.npc[npcId].life && Main.npc[npcId].active && Main.npc[npcId].life > 0)
 				{
 					//not a boss kill
 					if (!Main.npc[npcId].boss && !Main.npc[npcId].friendly)
 					{
-						Statistics.database.UpdateKills(player.UserID, KillType.Mob);
+						Statistics.database.UpdateKills(player.User.ID, KillType.Mob);
 						Statistics.SentDamageCache[player.Index][KillType.Mob] += Main.npc[npcId].life;
 						//Push damage to database on kill
-						Statistics.database.UpdateMobDamageGiven(player.UserID, player.Index);
+						Statistics.database.UpdateMobDamageGiven(player.User.ID, player.Index);
 					}
 					//a boss kill
 					else
 					{
-						Statistics.database.UpdateKills(player.UserID, KillType.Boss);
+						Statistics.database.UpdateKills(player.User.ID, KillType.Boss);
 						Statistics.SentDamageCache[player.Index][KillType.Boss] += Main.npc[npcId].life;
-						Statistics.database.UpdateBossDamageGiven(player.UserID, player.Index);
+						Statistics.database.UpdateBossDamageGiven(player.User.ID, player.Index);
 					}
 
 					//Push player damage dealt and damage received as well
-					Statistics.database.UpdatePlayerDamageGiven(player.UserID, player.Index);
-					Statistics.database.UpdateDamageReceived(player.UserID, player.Index);
-					Statistics.database.UpdateHighScores(player.UserID);
+					Statistics.database.UpdatePlayerDamageGiven(player.User.ID, player.Index);
+					Statistics.database.UpdateDamageReceived(player.User.ID, player.Index);
+					Statistics.database.UpdateHighScores(player.User.ID);
 				}
 				else
 				{
@@ -128,21 +127,21 @@ namespace Statistics
 				//Only update killer if the killer is logged in
 				if (Statistics.PlayerKilling[player].IsLoggedIn && pvp)
 				{
-					Statistics.database.UpdateKills(Statistics.PlayerKilling[player].UserID, KillType.Player);
-					Statistics.database.UpdateHighScores(Statistics.PlayerKilling[player].UserID);
-					Statistics.database.UpdatePlayerDamageGiven(Statistics.PlayerKilling[player].UserID,
+					Statistics.database.UpdateKills(Statistics.PlayerKilling[player].User.ID, KillType.Player);
+					Statistics.database.UpdateHighScores(Statistics.PlayerKilling[player].User.ID);
+					Statistics.database.UpdatePlayerDamageGiven(Statistics.PlayerKilling[player].User.ID,
 						Statistics.PlayerKilling[player].Index);
-					Statistics.database.UpdateDamageReceived(Statistics.PlayerKilling[player].UserID,
+					Statistics.database.UpdateDamageReceived(Statistics.PlayerKilling[player].User.ID,
 						Statistics.PlayerKilling[player].Index);
 				}
 				Statistics.PlayerKilling[player] = null;
 			}
 
-			Statistics.database.UpdateDeaths(player.UserID);
-			Statistics.database.UpdatePlayerDamageGiven(player.UserID, player.Index);
+			Statistics.database.UpdateDeaths(player.User.ID);
+			Statistics.database.UpdatePlayerDamageGiven(player.User.ID, player.Index);
 			//update all received damage on death
-			Statistics.database.UpdateDamageReceived(player.UserID, player.Index);
-			Statistics.database.UpdateHighScores(player.UserID);
+			Statistics.database.UpdateDamageReceived(player.User.ID, player.Index);
+			Statistics.database.UpdateHighScores(player.User.ID);
 
 			return false;
 		}
@@ -151,7 +150,7 @@ namespace Statistics
 		{
 			if (args.Player == null) return false;
 			var index = args.Player.Index;
-			var playerId = (byte) args.Data.ReadByte();
+			var playerId = (byte)args.Data.ReadByte();
 			args.Data.ReadByte();
 			var damage = args.Data.ReadInt16();
 			//player being attacked
@@ -166,7 +165,7 @@ namespace Statistics
 			//Attacking player
 			Statistics.PlayerKilling[player] = index != playerId ? args.Player : null;
 
-			damage = (short) Main.CalculateDamage(damage, player.TPlayer.statDefense);
+			damage = (short)Main.CalculateDamage(damage, player.TPlayer.statDefense);
 
 			if (Statistics.PlayerKilling[player] != null)
 			{
@@ -174,7 +173,7 @@ namespace Statistics
 				Statistics.RecvDamageCache[player.Index] += damage;
 			}
 			else
-				Statistics.RecvDamageCache[player.Index] += (damage*(crit ? 2 : 1));
+				Statistics.RecvDamageCache[player.Index] += (damage * (crit ? 2 : 1));
 
 			return false;
 		}
